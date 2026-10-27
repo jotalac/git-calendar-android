@@ -10,6 +10,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import dev.jotalac.core.CoreBridge
 import dev.jotalac.core.CoreException
 import dev.jotalac.core.Event
+import dev.jotalac.data.AddressSearch
 import dev.jotalac.data.CalendarRepository
 import dev.jotalac.data.PendingEdits
 import dev.jotalac.data.Connectivity
@@ -67,6 +68,7 @@ class AppContainer(context: Context) {
     val sync = SyncManager(core, repository, connectivity, scope)
     val reminders = ReminderScheduler(context, core, settings)
     val edits = PendingEdits(scope)
+    val addresses = AddressSearch(context)
 
     /** Event handed to the editor screen; navigation arguments stay small. */
     val editorRequest = MutableStateFlow<EditorRequest?>(null)

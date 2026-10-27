@@ -1,6 +1,8 @@
 package dev.jotalac.ui.event
 
 import android.Manifest
+import android.content.ActivityNotFoundException
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -26,9 +28,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.NotificationsNone
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.VideoCall
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -67,6 +73,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -75,6 +83,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.R
 import dev.jotalac.core.UpdateStrategy
+import dev.jotalac.data.EventLocation
 import dev.jotalac.data.Frequency
 import dev.jotalac.data.RepeatEnd
 import dev.jotalac.data.Settings
@@ -187,14 +196,7 @@ fun EventEditorScreen(vm: EventEditorViewModel, settings: Settings, onClose: () 
 
             HorizontalDivider()
             CalendarAndTag(vm, enabled)
-            OutlinedTextField(
-                value = vm.location,
-                onValueChange = { vm.location = it },
-                label = { Text(stringResource(R.string.event_location)) },
-                singleLine = true,
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            LocationField(vm, enabled)
             OutlinedTextField(
                 value = vm.description,
                 onValueChange = { vm.description = it },
@@ -654,3 +656,77 @@ private fun StrategyIcon(strategy: UpdateStrategy) {
         }
     }
 }
+
+/**
+ * Location with suggestions from earlier events and the address search, and a button that opens the
+ * place in the maps app or joins a meeting link. The button also works on read-only events.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LocationField(vm: EventEditorViewModel, enabled: Boolean) {
+    val context = LocalContext.current
+    var focused by remember { mutableStateOf(false) }
+    // the text the menu was closed at (picked or dismissed); it opens again once the text changes
+    var closedAt by remember { mutableStateOf<String?>(null) }
+    val past = EventLocation.matching(vm.pastLocations, vm.location, 4)
+    val addresses = vm.addressSuggestions
+        .filter { address -> past.none { it.equals(address, ignoreCase = true) } && !address.equals(vm.location.trim(), ignoreCase = true) }
+        .take(4)
+    val expanded = enabled && focused && closedAt != vm.location && (past.isNotEmpty() || addresses.isNotEmpty())
+    val isLink = EventLocation.meetingUrl(vm.location) != null
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {}) {
+        OutlinedTextField(
+            value = vm.location,
+            onValueChange = vm::editLocation,
+            label = { Text(stringResource(R.string.event_location)) },
+            singleLine = true,
+            enabled = enabled,
+            trailingIcon = if (vm.location.isBlank()) null else {
+                {
+                    IconButton(onClick = {
+                        val intent = EventLocation.intent(vm.location) ?: return@IconButton
+                        try {
+                            context.startActivity(intent)
+                        } catch (_: ActivityNotFoundException) {
+                            Toast.makeText(context, R.string.location_no_app, Toast.LENGTH_SHORT).show()
+                        }
+                    }) {
+                        Icon(
+                            if (isLink) Icons.Outlined.VideoCall else Icons.Outlined.Map,
+                            stringResource(if (isLink) R.string.location_join else R.string.location_open_map),
+                        )
+                    }
+                }
+            },
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, enabled)
+                .fillMaxWidth()
+                .onFocusChanged { focused = it.isFocused },
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { closedAt = vm.location }) {
+            past.forEach { suggestion ->
+                LocationSuggestion(suggestion, Icons.Outlined.History) {
+                    vm.pickLocation(suggestion)
+                    closedAt = suggestion
+                }
+            }
+            addresses.forEach { suggestion ->
+                LocationSuggestion(suggestion, Icons.Outlined.Place) {
+                    vm.pickLocation(suggestion)
+                    closedAt = suggestion
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LocationSuggestion(text: String, icon: ImageVector, onPick: () -> Unit) {
+    DropdownMenuItem(
+        text = { Text(text, maxLines = 2) },
+        leadingIcon = { Icon(icon, null) },
+        onClick = onPick,
+    )
+}
+

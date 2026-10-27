@@ -48,6 +48,9 @@
     <string name="event_title">Title</string>
     <string name="event_description">Description</string>
     <string name="event_location">Location</string>
+    <string name="location_open_map">Open in maps</string>
+    <string name="location_join">Join</string>
+    <string name="location_no_app">No app can open this location</string>
     <string name="event_from">From</string>
     <string name="event_to">To</string>
     <string name="event_entire_day">Entire day</string>

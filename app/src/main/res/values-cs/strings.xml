@@ -42,6 +42,9 @@
     <string name="event_title">Název</string>
     <string name="event_description">Popis</string>
     <string name="event_location">Lokace</string>
+    <string name="location_open_map">Otevřít v mapách</string>
+    <string name="location_join">Připojit se</string>
+    <string name="location_no_app">Žádná aplikace nemůže tuto lokaci otevřít</string>
     <string name="event_from">Od</string>
     <string name="event_to">Do</string>
     <string name="event_entire_day">Celý den</string>

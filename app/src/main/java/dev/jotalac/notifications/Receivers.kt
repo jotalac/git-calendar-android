@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import dev.jotalac.MainActivity
 import dev.jotalac.R
 import dev.jotalac.container
+import dev.jotalac.data.EventLocation
 import dev.jotalac.widget.ScheduleWidget
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -29,11 +30,12 @@ class ReminderReceiver : BroadcastReceiver() {
         ) return
 
         val start = Instant.ofEpochMilli(intent.getLongExtra(EXTRA_START, 0)).atZone(ZoneId.systemDefault())
+        val location = intent.getStringExtra(EXTRA_LOCATION).orEmpty()
         // Same body as the web client: start time · calendar · location, empty parts dropped.
         val body = listOf(
             start.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
             intent.getStringExtra(EXTRA_CALENDAR).orEmpty(),
-            intent.getStringExtra(EXTRA_LOCATION).orEmpty(),
+            location,
         ).filter { it.isNotBlank() }.joinToString(" · ")
 
         val open = Intent(context, MainActivity::class.java)
@@ -43,7 +45,7 @@ class ReminderReceiver : BroadcastReceiver() {
             context, key.hashCode(), open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-        val notification = NotificationCompat.Builder(context, ReminderScheduler.CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, ReminderScheduler.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(intent.getStringExtra(EXTRA_TITLE))
             .setContentText(body)
@@ -51,7 +53,16 @@ class ReminderReceiver : BroadcastReceiver() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(content)
             .setAutoCancel(true)
-            .build()
+        // "Join" for a meeting link, otherwise "Open in maps" for the place.
+        EventLocation.intent(location)?.let { target ->
+            val label = if (EventLocation.meetingUrl(location) != null) R.string.location_join else R.string.location_open_map
+            val action = PendingIntent.getActivity(
+                context, key.hashCode() + 1, target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            builder.addAction(0, context.getString(label), action)
+        }
+        val notification = builder.build()
         // A notification with the same key replaces the earlier one, like the web's notification tag.
         NotificationManagerCompat.from(context).notify(key, 0, notification)
     }

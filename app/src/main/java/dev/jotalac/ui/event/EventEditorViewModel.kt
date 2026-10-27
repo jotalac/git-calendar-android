@@ -7,19 +7,24 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dev.jotalac.AppContainer
 import dev.jotalac.R
 import dev.jotalac.core.Calendar
 import dev.jotalac.core.Event
 import dev.jotalac.core.Reminder
 import dev.jotalac.core.UpdateStrategy
+import dev.jotalac.data.EventLocation
 import dev.jotalac.data.Frequency
 import dev.jotalac.data.PendingEdits
 import dev.jotalac.data.Recurrence
 import dev.jotalac.data.RepeatEnd
 import dev.jotalac.layout.isWholeDay
 import dev.jotalac.ui.calendar.newEventDraft
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
 import java.time.LocalTime
@@ -69,6 +74,7 @@ class EventEditorViewModel(private val container: AppContainer) : ViewModel() {
     var calendar by mutableStateOf(draft.calendar.ifEmpty { container.repository.defaultCalendar()?.name.orEmpty() })
     var tagId by mutableStateOf(draft.tagId)
     var location by mutableStateOf(draft.location)
+        private set
     var description by mutableStateOf(draft.description)
     val reminders = mutableStateListOf<Long>().apply { addAll(draft.reminders.map { it.minutesBefore }) }
 
@@ -83,6 +89,15 @@ class EventEditorViewModel(private val container: AppContainer) : ViewModel() {
     /** Set once the user touches any repeat field; until then the stored rule is sent back unchanged. */
     var repeatTouched by mutableStateOf(false)
     private val originalRecurrence = Recurrence.parse(draft.repeat)
+
+    /** Locations of earlier and upcoming events, most recent first, suggested while typing a location. */
+    var pastLocations by mutableStateOf(emptyList<String>())
+        private set
+
+    /** Address search results for the typed location. */
+    var addressSuggestions by mutableStateOf(emptyList<String>())
+        private set
+    private var addressSearch: Job? = null
 
     var error by mutableStateOf<Int?>(null)
     var failure by mutableStateOf<Throwable?>(null)
@@ -115,6 +130,33 @@ class EventEditorViewModel(private val container: AppContainer) : ViewModel() {
         if (calendars.none { it.name == calendar && it.isWritable } && original == null) {
             calendar = container.repository.defaultCalendar()?.name.orEmpty()
         }
+        if (!readonly) {
+            viewModelScope.launch {
+                val now = ZonedDateTime.now(zone)
+                pastLocations = runCatching {
+                    EventLocation.recent(container.core.getEvents(now.minusYears(1), now.plusYears(1), null))
+                }.getOrDefault(emptyList())
+            }
+        }
+    }
+
+    /** Sets the typed location and, after a pause in typing, searches for matching addresses. */
+    fun editLocation(text: String) {
+        location = text
+        addressSearch?.cancel()
+        addressSuggestions = emptyList()
+        val query = text.trim()
+        if (query.length < 3 || EventLocation.meetingUrl(query) != null) return
+        addressSearch = viewModelScope.launch {
+            delay(400)
+            addressSuggestions = container.addresses.search(query)
+        }
+    }
+
+    fun pickLocation(text: String) {
+        addressSearch?.cancel()
+        addressSuggestions = emptyList()
+        location = text
     }
 
     fun tagsOf(name: String) = container.repository.calendar(name)?.tagList.orEmpty()

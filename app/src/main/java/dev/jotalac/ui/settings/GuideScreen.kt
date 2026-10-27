@@ -93,6 +93,7 @@ private val SECTIONS = listOf(
         listOf(
             "Filter: use the checkboxes under each repository to show or hide its tags.",
             "Month map: use the small calendar in the menu to jump directly to a date.",
+            "Location: suggestions come from your other events' locations and the phone's address search. The map button opens the place in your maps app; for a meeting link it joins the meeting.",
             "Edit: tap an event to update its details, repeat rule, repository, or tag.",
             "Reminders: add reminders to an event to get a notification before it starts.",
             "Private remotes: prefer an access token over your Git provider account password.",
