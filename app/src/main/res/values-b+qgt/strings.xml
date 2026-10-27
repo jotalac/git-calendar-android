@@ -1,0 +1,22 @@
+<!-- The joke "Git" language from web-client locales/git.json; everything else falls back to English. -->
+<resources>
+    <string name="event_new">New Commit</string>
+    <string name="new_event">New commit</string>
+    <string name="event_title">Message</string>
+    <string name="event_description">Message \\n</string>
+    <string name="event_location">Origin</string>
+    <string name="save">Commit</string>
+    <string name="create">Init / Clone</string>
+    <string name="close">Abort</string>
+    <string name="cancel">Abort</string>
+    <string name="delete">Drop</string>
+    <string name="calendars_title">Repositories</string>
+    <string name="color_blue">Commit Blue</string>
+    <string name="color_green">Addition Green (+)</string>
+    <string name="color_red">Deletion Red (-)</string>
+    <string name="color_purple">Merged Purple</string>
+    <string name="color_yellow">Stash Yellow</string>
+    <string name="color_orange">Rebase Orange</string>
+    <string name="color_pink">Fetch Pink</string>
+    <string name="color_gray">Docs Gray</string>
+</resources>

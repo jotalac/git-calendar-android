@@ -1,0 +1,229 @@
+<resources>
+    <string name="app_name">Git Calendar</string>
+
+    <!-- Views and navigation -->
+    <string name="view_4d">4 days</string>
+    <string name="view_week">Week</string>
+    <string name="view_month">Month</string>
+    <string name="today">Today</string>
+    <string name="calendars_title">Calendars</string>
+    <string name="settings">Settings</string>
+    <string name="guide">Guide</string>
+    <string name="sync_now">Sync calendars</string>
+    <string name="source_code">Source code on GitHub</string>
+    <string name="open_drawer">Open menu</string>
+    <string name="previous_period">Previous period</string>
+    <string name="next_period">Next period</string>
+    <string name="previous_month">Previous month</string>
+    <string name="next_month">Next month</string>
+    <string name="new_event">New event</string>
+    <string name="back">Back</string>
+    <string name="all_day">All day</string>
+    <string name="more_count">+%1$d more</string>
+    <string name="sync_status_offline">Offline</string>
+    <string name="sync_status_idle">Synced</string>
+    <string name="sync_status_syncing">Syncing…</string>
+    <string name="create_calendar">Create calendar</string>
+    <string name="edit_calendar">Edit calendar %1$s</string>
+    <string name="create_tag">Create tag in calendar %1$s</string>
+    <string name="edit_tag">Edit tag %1$s</string>
+    <string name="show_tag">Show %1$s</string>
+
+    <!-- Buttons -->
+    <string name="save">Save</string>
+    <string name="create">Create</string>
+    <string name="import_btn">Import</string>
+    <string name="close">Close</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="ok">OK</string>
+    <string name="details">Details</string>
+    <string name="optional">optional</string>
+
+    <!-- Event editor -->
+    <string name="event_new">New Event</string>
+    <string name="event_edit">Edit event</string>
+    <string name="event_view">Event</string>
+    <string name="event_title">Title</string>
+    <string name="event_description">Description</string>
+    <string name="event_location">Location</string>
+    <string name="event_from">From</string>
+    <string name="event_to">To</string>
+    <string name="event_entire_day">Entire day</string>
+    <string name="event_calendar">Calendar</string>
+    <string name="event_tag">Tag</string>
+    <string name="event_readonly">This calendar is read-only.</string>
+    <string name="event_delete_confirm">Delete this event?</string>
+    <string name="error_missing_title">Enter a title.</string>
+    <string name="error_bad_to_date">The event cannot end before it starts.</string>
+    <string name="error_bad_count">The number of repetitions must be at least 1.</string>
+    <string name="error_bad_until">The repeat end date cannot be before the event starts.</string>
+    <string name="error_bad_custom_repeat">Choose a repeat interval of at least 1 and, for weekly rules, at least one weekday.</string>
+    <string name="error_no_writable_calendar">There is no writable calendar to add events to.</string>
+
+    <!-- Reminders -->
+    <string name="reminders">Reminders</string>
+    <string name="reminder_add">Add reminder</string>
+    <string name="reminder_remove">Remove</string>
+    <string name="reminder_at_start">At event start</string>
+    <plurals name="reminder_minutes_before">
+        <item quantity="one">%d minute before</item>
+        <item quantity="other">%d minutes before</item>
+    </plurals>
+    <plurals name="reminder_hours_before">
+        <item quantity="one">%d hour before</item>
+        <item quantity="other">%d hours before</item>
+    </plurals>
+    <plurals name="reminder_days_before">
+        <item quantity="one">%d day before</item>
+        <item quantity="other">%d days before</item>
+    </plurals>
+    <string name="reminder_channel">Reminders</string>
+    <string name="reminder_channel_description">Notifications for event reminders</string>
+
+    <!-- Repeat -->
+    <string name="repeat">Repeat</string>
+    <string name="repeat_end">End</string>
+    <string name="repeat_end_on">On</string>
+    <string name="repeat_end_after">After</string>
+    <string name="repeat_never">Never</string>
+    <string name="repeat_daily">Daily</string>
+    <string name="repeat_weekly">Weekly</string>
+    <string name="repeat_monthly">Monthly</string>
+    <string name="repeat_yearly">Yearly</string>
+    <string name="repeat_custom">Custom</string>
+    <string name="repeat_edit">Edit</string>
+    <string name="repeat_every">Every</string>
+    <string name="repeat_on">On</string>
+    <string name="repeat_ends">Ends</string>
+    <string name="repeat_times">times</string>
+    <string name="repeat_unit_day">day(s)</string>
+    <string name="repeat_unit_week">week(s)</string>
+    <string name="repeat_unit_month">month(s)</string>
+    <string name="repeat_unit_year">year(s)</string>
+
+    <!-- Strategy -->
+    <string name="strategy_title">Repeating Event</string>
+    <string name="strategy_all">All</string>
+    <string name="strategy_all_body">Affects ALL events in the series.</string>
+    <string name="strategy_following">Following</string>
+    <string name="strategy_following_body">Only affects the following events in the series.</string>
+    <string name="strategy_current">Current</string>
+    <string name="strategy_current_body">Only affects this one event. The others in the series remain unchanged.</string>
+
+    <!-- Calendar editor -->
+    <string name="calendar_name">Name</string>
+    <string name="calendar_mode_init">Init</string>
+    <string name="calendar_mode_clone">Clone</string>
+    <string name="calendar_mode_ical">iCal</string>
+    <string name="calendar_ical_url">URL</string>
+    <string name="calendar_ical_file">File</string>
+    <string name="calendar_git_repository">Git repository</string>
+    <string name="calendar_ical">iCalendar subscription URL</string>
+    <string name="calendar_git_credentials">Git credentials</string>
+    <string name="calendar_username">Username</string>
+    <string name="calendar_password">Password/Token</string>
+    <string name="calendar_encrypted">Encrypted</string>
+    <string name="calendar_encryption_key">Encryption key/password</string>
+    <string name="calendar_readonly">Read-only</string>
+    <string name="calendar_file">File</string>
+    <string name="calendar_choose_file">Choose .ics file</string>
+    <string name="calendar_destination">Import into</string>
+    <string name="calendar_init_description">Create an empty calendar, optionally connected to a Git repository.</string>
+    <string name="calendar_clone_description">Clone an existing calendar from a Git repository URL.</string>
+    <string name="calendar_file_import_description">Select an .ics file, then choose the calendar and tag to import the events in.</string>
+    <string name="calendar_url_import_description">Enter a name and an .ics URL to add it as a read-only calendar linked to that source.</string>
+    <string name="calendar_is_encrypted">This calendar is encrypted.</string>
+    <string name="confirm_calendar_delete">Do you really want to delete the whole calendar?</string>
+    <string name="error_calendar_name_required">Enter a calendar name. The name cannot be empty or contain only spaces.</string>
+    <string name="error_remote_url_required">Enter a Git repository URL. A URL is required when cloning a calendar.</string>
+    <string name="error_ical_url_required">Enter an iCalendar URL. A URL is required when importing from a URL.</string>
+    <string name="error_invalid_url">Enter a valid absolute URL, including the scheme (for example, \"https://\").</string>
+    <string name="error_remote_url_end_dot_git">The Git repository URL must end with \".git\".</string>
+    <string name="error_ical_file_required">Select an iCalendar file with the .ics extension to import.</string>
+    <string name="error_ical_destination_required">Select an available writable calendar as the import destination.</string>
+    <string name="error_encryption_key_required">Enter an encryption key when encryption is enabled.</string>
+    <string name="no_writable_calendars">Create a writable calendar before importing a file.</string>
+
+    <!-- Tags -->
+    <string name="tag_name">Name</string>
+    <string name="tag_color">Color</string>
+    <string name="tag_untagged">Untagged</string>
+    <string name="tag_create">Create tag</string>
+    <string name="error_tag_name_required">Enter a tag name.</string>
+
+    <!-- Colors -->
+    <string name="color_blue">Blue</string>
+    <string name="color_green">Green</string>
+    <string name="color_red">Red</string>
+    <string name="color_purple">Purple</string>
+    <string name="color_yellow">Yellow</string>
+    <string name="color_orange">Orange</string>
+    <string name="color_pink">Pink</string>
+    <string name="color_teal">Teal</string>
+    <string name="color_brown">Brown</string>
+    <string name="color_gray">Gray</string>
+
+    <!-- Settings -->
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_auto">Automatic</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_colors">Colors</string>
+    <string name="settings_colors_dynamic">Wallpaper (Material You)</string>
+    <string name="settings_colors_git">Git</string>
+    <string name="settings_time_format">Time format</string>
+    <string name="settings_time_system">System default</string>
+    <string name="settings_12h">12-hour time</string>
+    <string name="settings_24h">24-hour time</string>
+    <string name="settings_week_start">Week start</string>
+    <string name="settings_drag_precision">Drag precision</string>
+    <string name="settings_minutes">%1$d min</string>
+    <string name="settings_hour_range">Hour range</string>
+    <string name="settings_hour_start">Start</string>
+    <string name="settings_hour_end">End</string>
+    <string name="settings_default_color">Default event color</string>
+    <string name="settings_default_view">Default view</string>
+    <string name="settings_background_sync">Sync in the background</string>
+    <string name="settings_background_sync_summary">Fetch changes about every 30 minutes and keep reminders up to date.</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_calendar">Calendar</string>
+    <string name="settings_advanced">Advanced</string>
+    <string name="settings_files">Browse stored files</string>
+    <string name="settings_files_summary">Debug view of the calendar repositories on this device.</string>
+
+    <!-- Data management -->
+    <string name="data_title">Data management</string>
+    <string name="data_export">Export</string>
+    <string name="data_export_calendar">Calendar to export</string>
+    <string name="data_export_format">Export format</string>
+    <string name="data_all">All data</string>
+    <string name="data_import_zip">Import ZIP</string>
+    <string name="data_restore_warning">Warning: importing a ZIP backup will override all current calendar data.</string>
+    <string name="data_confirm_restore">Restore data from %1$s? All current calendar data will be overridden.</string>
+    <string name="data_restore_success">Calendar data restored successfully.</string>
+    <string name="data_export_success">Exported %1$s.</string>
+
+    <!-- Files -->
+    <string name="files_title">Stored files</string>
+    <string name="files_empty">No files yet.</string>
+    <string name="files_binary">Binary file, %1$s</string>
+
+    <!-- Errors -->
+    <string name="core_error_calendar">Calendar “%1$s”: %2$s</string>
+    <string name="core_error_network">Could not reach the remote service. Check the URL and network connection, then try again.</string>
+    <string name="core_error_auth">Authentication failed. Check your credentials and try again.</string>
+    <string name="core_error_forbidden">Connections to this remote host are not allowed. Check the URL and try again.</string>
+    <string name="core_error_rate_limit">Too many requests were sent to the remote service. Wait a moment and try again.</string>
+    <string name="core_error_validation">The operation contains invalid data. Check your input and try again.</string>
+    <string name="core_error_storage">Calendar data could not be read or saved. Check the available storage and try again.</string>
+    <string name="core_error_title">Something went wrong</string>
+    <string name="sync_failed">Sync failed</string>
+    <string name="startup_failed">The calendar core could not start.</string>
+    <!-- Home-screen widget -->
+    <string name="widget_label">Upcoming events</string>
+    <string name="widget_description">Your events for the next 30 days</string>
+    <string name="widget_no_events">No events in the next %1$d days</string>
+</resources>

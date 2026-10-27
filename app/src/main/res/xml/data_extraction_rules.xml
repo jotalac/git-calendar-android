@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Calendar repositories hold encryption keys and remote URLs with access tokens: never back them up. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path=".git-calendar-data" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path=".git-calendar-data" />
+    </device-transfer>
+</data-extraction-rules>
