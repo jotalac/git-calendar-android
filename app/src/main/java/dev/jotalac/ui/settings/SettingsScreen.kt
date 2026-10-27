@@ -110,6 +110,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onFiles: () -> U
             Setting(
                 stringResource(R.string.settings_default_view), settings.defaultView,
                 listOf(
+                    CalendarViewType.Day to R.string.view_day,
                     CalendarViewType.FourDays to R.string.view_4d,
                     CalendarViewType.Week to R.string.view_week,
                     CalendarViewType.Month to R.string.view_month,

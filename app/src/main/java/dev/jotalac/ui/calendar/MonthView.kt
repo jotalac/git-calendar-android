@@ -132,23 +132,15 @@ fun MonthView(
                     ?.event
             }
 
-            fun moreAt(pos: Offset): LocalDate? {
-                val index = indexAt(pos)
-                val week = index / 7
-                val col = index % 7
-                if (weeks[week].hiddenCounts[col] == 0) return null
-                val y = pos.y - week * rowPx
-                return if (y > rowPx - with(density) { MoreHeight.toPx() } - 4f) dates[index] else null
-            }
-
             Box(
                 Modifier
                     .fillMaxSize()
                     .calendarGestures {
                         object : CalendarGestureHandler {
                             override fun onTap(position: Offset) {
+                                // an event opens it; anywhere else in the cell, "+N more" included, opens that day
                                 chipAt(position)?.let { actions.open(it); return }
-                                moreAt(position)?.let { actions.openWeek(it) }
+                                actions.openDay(dates[indexAt(position)])
                             }
 
                             override fun onDragStart(position: Offset): Boolean {

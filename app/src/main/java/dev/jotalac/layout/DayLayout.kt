@@ -66,6 +66,9 @@ object DayLayout {
 /** Configured or expanded hour range of the timeline; [endHour] may exceed 24. */
 data class HourRange(val startHour: Int, val endHour: Int) {
     val hours: Int get() = endHour - startHour
+
+    /** The whole 24 hours around this range: midnight to midnight, or ending at [endHour] when it runs past midnight. */
+    fun fullDay(): HourRange = if (endHour > 24) HourRange(endHour - 24, endHour) else HourRange(0, 24)
 }
 
 /** Events of an N-day view split into per-day timed columns and the all-day bar. Ported from XDaysView.vue. */

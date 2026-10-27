@@ -28,14 +28,15 @@ import java.time.temporal.TemporalAdjusters
 fun viewStart(view: CalendarViewType, date: LocalDate, weekStart: DayOfWeek): LocalDate = when (view) {
     CalendarViewType.Month -> date.withDayOfMonth(1)
     CalendarViewType.Week -> date.with(TemporalAdjusters.previousOrSame(weekStart))
-    CalendarViewType.FourDays -> date
+    CalendarViewType.FourDays, CalendarViewType.Day -> date
 }
 
-/** Moves [date] by [periods] whole views: ±1 month, ±7 days or ±4 days. */
+/** Moves [date] by [periods] whole views: ±1 month, ±7 days, ±4 days or ±1 day. */
 fun shiftPeriod(view: CalendarViewType, date: LocalDate, periods: Long): LocalDate = when (view) {
     CalendarViewType.Month -> date.plusMonths(periods)
     CalendarViewType.Week -> date.plusWeeks(periods)
     CalendarViewType.FourDays -> date.plusDays(4 * periods)
+    CalendarViewType.Day -> date.plusDays(periods)
 }
 
 /** Draft for a new event, defaults from web-client useEventModal.ts: next full hour, two hours long. */
@@ -77,6 +78,12 @@ class CalendarViewModel(
     private val _anchor = MutableStateFlow(_date.value to 0)
     val anchor: StateFlow<Pair<LocalDate, Int>> = _anchor.asStateFlow()
 
+    /** The view Back returns to after a day was opened from it (the month view). */
+    private val _returnView = MutableStateFlow(
+        savedState.get<String>(KEY_RETURN_VIEW)?.let { name -> CalendarViewType.entries.firstOrNull { it.name == name } }
+    )
+    val returnView: StateFlow<CalendarViewType?> = _returnView.asStateFlow()
+
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
 
@@ -113,7 +120,26 @@ class CalendarViewModel(
     fun setView(view: CalendarViewType) {
         _view.value = view
         savedState[KEY_VIEW] = view.name
+        setReturnView(null)
         recenter()
+    }
+
+    /** Shows [date] in the day view; Back then returns to the current view. */
+    fun openDay(date: LocalDate) {
+        val from = _view.value
+        setView(CalendarViewType.Day)
+        jumpTo(date)
+        if (from != CalendarViewType.Day) setReturnView(from)
+    }
+
+    /** Returns from a day opened with [openDay] to the view it was opened from, around the shown date. */
+    fun goBack() {
+        _returnView.value?.let(::setView)
+    }
+
+    private fun setReturnView(view: CalendarViewType?) {
+        _returnView.value = view
+        savedState[KEY_RETURN_VIEW] = view?.name
     }
 
     /** Called by the pager when the user swipes to another period. */
@@ -237,6 +263,7 @@ class CalendarViewModel(
     private companion object {
         const val KEY_VIEW = "view"
         const val KEY_DATE = "date"
+        const val KEY_RETURN_VIEW = "return_view"
     }
 }
 

@@ -3,13 +3,16 @@ package dev.jotalac.ui.calendar
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -19,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -114,7 +118,12 @@ fun Modifier.pinchZoom(onZoom: (Float) -> Unit): Modifier = pointerInput(Unit) {
     }
 }
 
-/** An event block in the timeline, all-day bar or month grid. */
+private val TitleLineHeight = 14.sp
+
+/**
+ * An event block in the timeline, all-day bar or month grid. The title wraps over every full line
+ * that fits, without an ellipsis; the time is shown below it only when a line is left for it.
+ */
 @Composable
 fun EventChip(
     title: String,
@@ -126,7 +135,7 @@ fun EventChip(
 ) {
     val content = contentColorOn(color)
     val shape = RoundedCornerShape(4.dp)
-    Box(
+    BoxWithConstraints(
         modifier
             .clip(shape)
             .background(color)
@@ -135,25 +144,32 @@ fun EventChip(
             .alpha(if (ghost) 0.85f else 1f)
             .padding(horizontal = 4.dp, vertical = if (compact) 1.dp else 2.dp),
     ) {
+        val lineHeight = with(LocalDensity.current) { TitleLineHeight.toDp() }
+        val lines = if (constraints.hasBoundedHeight) (maxHeight / lineHeight).toInt().coerceAtLeast(1) else Int.MAX_VALUE
+        var titleLines by remember { mutableIntStateOf(1) }
         Column {
             Text(
                 title,
                 color = content,
                 fontSize = 12.sp,
-                lineHeight = 14.sp,
+                lineHeight = TitleLineHeight,
                 fontWeight = FontWeight.Medium,
-                maxLines = if (compact || subtitle == null) 1 else 2,
-                overflow = TextOverflow.Ellipsis,
+                maxLines = lines,
+                // a single line is cut at the edge rather than at a word, to show as much as possible
+                softWrap = lines > 1,
+                overflow = TextOverflow.Clip,
                 style = MaterialTheme.typography.labelMedium,
+                onTextLayout = { titleLines = it.lineCount },
             )
-            if (subtitle != null && !compact) {
+            if (subtitle != null && titleLines < lines) {
                 Text(
                     subtitle,
                     color = content.copy(alpha = 0.85f),
                     fontSize = 11.sp,
                     lineHeight = 13.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    softWrap = false,
+                    overflow = TextOverflow.Clip,
                 )
             }
         }

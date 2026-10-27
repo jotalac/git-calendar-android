@@ -73,7 +73,8 @@ private val SECTIONS = listOf(
             "Resize: press and hold near the top or bottom edge of an event and drag.",
             "Precision: change the drag interval in Settings.",
             "Next and previous period: swipe left or right across the calendar.",
-            "Zoom: pinch the timeline to make hours taller, then scroll vertically.",
+            "Day: tap a day in the month view to open it on its own; Back returns to the month.",
+            "Zoom: pinch the timeline to make hours taller, then scroll vertically. Swiping to another period keeps the zoom and scroll position.",
         ),
         "Events in read-only repositories cannot be dragged or edited.",
     ),
@@ -82,7 +83,7 @@ private val SECTIONS = listOf(
         listOf(
             "N: create a new event",
             "T: go to today",
-            "4 / W / M: switch to the four-day, week or month view",
+            "D / 4 / W / M: switch to the day, four-day, week or month view",
             "← / →: move to the previous or next period",
         ),
         "Shortcuts work with a hardware keyboard while the calendar is open.",

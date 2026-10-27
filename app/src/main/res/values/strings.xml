@@ -2,6 +2,7 @@
     <string name="app_name">Git Calendar</string>
 
     <!-- Views and navigation -->
+    <string name="view_day">Day</string>
     <string name="view_4d">4 days</string>
     <string name="view_week">Week</string>
     <string name="view_month">Month</string>

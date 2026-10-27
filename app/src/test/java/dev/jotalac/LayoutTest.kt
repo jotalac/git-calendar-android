@@ -117,6 +117,13 @@ class LayoutTest {
     }
 
     @Test
+    fun fullDayCoversTheConfiguredHours() {
+        assertEquals(HourRange(0, 24), HourRange(7, 24).fullDay())
+        assertEquals(HourRange(0, 24), HourRange(6, 22).fullDay())
+        assertEquals(HourRange(2, 26), HourRange(6, 26).fullDay())
+    }
+
+    @Test
     fun splitExpandsHourRangeAndHandlesPastMidnight() {
         val early = ev("early", at(day, 4, 30), at(day, 5, 15))
         assertEquals(HourRange(4, 24), TimelineSplit.split(listOf(early), day, 7, HourRange(6, 24)).range)

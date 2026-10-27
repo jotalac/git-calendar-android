@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Today
+import androidx.compose.material.icons.outlined.ViewDay
 import androidx.compose.material.icons.outlined.ViewWeek
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
@@ -112,6 +113,7 @@ fun CalendarScreen(vm: CalendarViewModel, nav: CalendarNavigation) {
     val syncStatus by vm.syncStatus.collectAsStateWithLifecycle()
     val error by vm.error.collectAsStateWithLifecycle()
     val startupError by vm.startupError.collectAsStateWithLifecycle()
+    val returnView by vm.returnView.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
@@ -138,10 +140,7 @@ fun CalendarScreen(vm: CalendarViewModel, nav: CalendarNavigation) {
             nav.openEditor()
         },
         changed = { updated, original -> vm.applyDrag(updated, original, nav.openEditor) },
-        openWeek = { day ->
-            vm.setView(CalendarViewType.Week)
-            vm.jumpTo(day)
-        },
+        openDay = vm::openDay,
     )
 
     val closeDrawer: () -> Unit = { scope.launch { drawerState.close() } }
@@ -170,6 +169,7 @@ fun CalendarScreen(vm: CalendarViewModel, nav: CalendarNavigation) {
             when (e.key) {
                 Key.N -> actions.create(newEventDraft(vm.defaultCalendar()))
                 Key.T -> vm.today()
+                Key.D -> vm.setView(CalendarViewType.Day)
                 Key.Four, Key.NumPad4 -> vm.setView(CalendarViewType.FourDays)
                 Key.W -> vm.setView(CalendarViewType.Week)
                 Key.M -> vm.setView(CalendarViewType.Month)
@@ -179,6 +179,9 @@ fun CalendarScreen(vm: CalendarViewModel, nav: CalendarNavigation) {
             }
             true
         }
+
+    // Back from a day opened in the month view goes back to the month; the drawer's handler below wins while it is open.
+    BackHandler(enabled = returnView != null, onBack = vm::goBack)
 
     BoxWithConstraints(Modifier.fillMaxSize().then(shortcuts)) {
         val wide = maxWidth >= 840.dp
@@ -275,6 +278,8 @@ private fun CalendarPager(
     hidden: dev.jotalac.data.HiddenTags,
     actions: CalendarActions,
 ) {
+    // Outside key(): the zoom and scroll position survive swiping, jumping to a date and switching views.
+    val timeline = rememberTimelineState()
     // Re-create the pager around the new date whenever the date is set from outside (today, mini month).
     key(anchor, view) {
         val anchorDate = anchor.first
@@ -284,12 +289,15 @@ private fun CalendarPager(
                 vm.onPageDate(shiftPeriod(view, anchorDate, (page - INITIAL_PAGE).toLong()))
             }
         }
-        HorizontalPager(pager, beyondViewportPageCount = 1, key = { it }) { page ->
-            val date = shiftPeriod(view, anchorDate, (page - INITIAL_PAGE).toLong())
-            val start = viewStart(view, date, settings.weekStart)
-            when (view) {
-                CalendarViewType.Month -> MonthView(start, vm, settings, revision, hidden, actions)
-                else -> XDaysView(start, view.days, vm, settings, revision, hidden, actions)
+        fun startOf(page: Int) =
+            viewStart(view, shiftPeriod(view, anchorDate, (page - INITIAL_PAGE).toLong()), settings.weekStart)
+        if (view == CalendarViewType.Month) {
+            HorizontalPager(pager, beyondViewportPageCount = 1, key = { it }) { page ->
+                MonthView(startOf(page), vm, settings, revision, hidden, actions)
+            }
+        } else {
+            XDaysPager(pager, timeline, settings) { page, frame ->
+                XDaysView(startOf(page), view.days, page, timeline, frame, vm, settings, revision, hidden, actions)
             }
         }
     }
@@ -324,6 +332,7 @@ private fun SyncStatusButton(status: SyncStatus, onSync: () -> Unit) {
 
 private val CalendarViewType.label: Int
     get() = when (this) {
+        CalendarViewType.Day -> R.string.view_day
         CalendarViewType.FourDays -> R.string.view_4d
         CalendarViewType.Week -> R.string.view_week
         CalendarViewType.Month -> R.string.view_month
@@ -331,6 +340,7 @@ private val CalendarViewType.label: Int
 
 private val CalendarViewType.icon: ImageVector
     get() = when (this) {
+        CalendarViewType.Day -> Icons.Outlined.ViewDay
         CalendarViewType.FourDays -> Icons.Outlined.ViewWeek
         CalendarViewType.Week -> Icons.Outlined.CalendarViewWeek
         CalendarViewType.Month -> Icons.Outlined.CalendarMonth

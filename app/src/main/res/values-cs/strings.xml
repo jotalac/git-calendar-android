@@ -1,4 +1,5 @@
 <resources>
+    <string name="view_day">Den</string>
     <string name="view_4d">4 dny</string>
     <string name="view_week">Týden</string>
     <string name="view_month">Měsíc</string>

@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.json.Json
 import java.time.DayOfWeek
 
-enum class CalendarViewType(val days: Int) { FourDays(4), Week(7), Month(0) }
+enum class CalendarViewType(val days: Int) { Day(1), FourDays(4), Week(7), Month(0) }
 enum class TimeFormat { System, H12, H24 }
 enum class ThemeMode { System, Light, Dark }
 enum class ColorSource { Dynamic, Git }
