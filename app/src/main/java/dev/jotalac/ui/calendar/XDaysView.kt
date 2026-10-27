@@ -237,7 +237,8 @@ fun XDaysView(
     val configured = HourRange(settings.dayViewStartHour, settings.timelineEndHour)
     val rangeStart = start.atStartOfDay(zone)
     val rangeEnd = start.plusDays(days + if (configured.endHour > 24) 1L else 0L).atStartOfDay(zone)
-    val loaded by produceState(emptyList<Event>(), start, days, revision, hidden, configured) {
+    // starts from the last loaded events, so a reload while the core is busy does not empty the view
+    val loaded by produceState(vm.cachedEvents(rangeStart, rangeEnd), start, days, revision, hidden, configured) {
         value = vm.loadEvents(rangeStart, rangeEnd)
     }
     val pendingEdits by vm.pendingEdits.collectAsStateWithLifecycle()

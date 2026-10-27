@@ -75,7 +75,8 @@ fun MonthView(
     val dates = remember(gridStart) { List(MonthLayout.WEEKS * 7) { gridStart.plusDays(it.toLong()) } }
     val rangeStart = gridStart.atStartOfDay(zone)
     val rangeEnd = gridStart.plusDays(42).atStartOfDay(zone)
-    val loaded by produceState(emptyList<Event>(), gridStart, revision, hidden) {
+    // starts from the last loaded events, so a reload while the core is busy does not empty the view
+    val loaded by produceState(vm.cachedEvents(rangeStart, rangeEnd), gridStart, revision, hidden) {
         value = vm.loadEvents(rangeStart, rangeEnd)
     }
     val pendingEdits by vm.pendingEdits.collectAsStateWithLifecycle()

@@ -10,6 +10,7 @@ import dev.jotalac.core.Event
 import dev.jotalac.core.Tag
 import dev.jotalac.data.CalendarRepository
 import dev.jotalac.data.CalendarViewType
+import dev.jotalac.data.HiddenTags
 import dev.jotalac.data.PendingEdits
 import dev.jotalac.data.Settings
 import kotlinx.coroutines.CancellationException
@@ -175,15 +176,33 @@ class CalendarViewModel(
 
     // ------------------------------------------ data -------------------------------------------
 
-    suspend fun loadEvents(from: ZonedDateTime, to: ZonedDateTime): List<Event> = try {
-        val started = container.edits.loadStarted()
-        container.core.getEvents(from, to, CalendarRepository.buildFilter(hiddenTags.value))
-            .also { container.edits.loaded(started, from, to) }
-    } catch (e: CancellationException) {
-        throw e // the view moved to other dates while loading; not an error
-    } catch (e: Exception) {
-        _error.value = e
-        emptyList()
+    /**
+     * Last events loaded per range and filter. A view shows them while it reloads, because the core
+     * answers one call at a time and may be busy syncing for a while, for example right after a save.
+     */
+    private val loadedEvents = object : LinkedHashMap<Triple<ZonedDateTime, ZonedDateTime, HiddenTags>, List<Event>>() {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Triple<ZonedDateTime, ZonedDateTime, HiddenTags>, List<Event>>) =
+            size > 24
+    }
+
+    fun cachedEvents(from: ZonedDateTime, to: ZonedDateTime): List<Event> =
+        loadedEvents[Triple(from, to, hiddenTags.value)].orEmpty()
+
+    suspend fun loadEvents(from: ZonedDateTime, to: ZonedDateTime): List<Event> {
+        val hidden = hiddenTags.value
+        return try {
+            val started = container.edits.loadStarted()
+            container.core.getEvents(from, to, CalendarRepository.buildFilter(hidden))
+                .also {
+                    container.edits.loaded(started, from, to)
+                    loadedEvents[Triple(from, to, hidden)] = it
+                }
+        } catch (e: CancellationException) {
+            throw e // the view moved to other dates while loading; not an error
+        } catch (e: Exception) {
+            _error.value = e
+            loadedEvents[Triple(from, to, hidden)].orEmpty()
+        }
     }
 
     fun calendarOf(name: String): Calendar? = container.repository.calendar(name)
