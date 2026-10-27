@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -146,6 +147,8 @@ private fun CalendarItem(calendar: Calendar, settings: Settings, hidden: HiddenT
             Icon(
                 when {
                     calendar.isICal -> Icons.Outlined.Link
+                    // no remote: stored only on this device
+                    calendar.remoteUrl.isEmpty() -> Icons.Outlined.PhoneAndroid
                     else -> Icons.Outlined.AccountTree
                 },
                 null,
