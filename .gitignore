@@ -17,3 +17,6 @@ local.properties
 /app/libs/core.aar
 /app/libs/core-sources.jar
 .idea/*
+app/build
+app/release
+.kotlin
