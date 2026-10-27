@@ -13,6 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-# gomobile output (built from core-shim by `make core`)
-/app/libs/gcal.aar
-/app/libs/gcal-sources.jar
+# gomobile output (built from ../git-calendar-core by `make core`)
+/app/libs/core.aar
+/app/libs/core-sources.jar

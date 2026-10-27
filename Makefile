@@ -2,24 +2,25 @@ GO ?= go
 ANDROID_HOME ?= $(HOME)/Library/Android/sdk
 ANDROID_NDK_HOME ?= $(lastword $(sort $(wildcard $(ANDROID_HOME)/ndk/*)))
 ANDROID_API ?= 31
-AAR := app/libs/gcal.aar
+AAR := app/libs/core.aar
 TOOLS_DIR := $(abspath build/go-tools)
+CORE_DIR := ../git-calendar-core
 
 .PHONY: core core-test clean-core
 
-# Build the gomobile AAR wrapping git-calendar/core (see core-shim/gcal).
+# Build the gomobile AAR from git-calendar-core's mobile binding (pkg/mobile).
 core: $(AAR)
 
-$(AAR): $(shell find core-shim core/pkg core/go.mod -type f)
+$(AAR): $(shell find $(CORE_DIR)/pkg $(CORE_DIR)/go.mod -type f)
 	mkdir -p app/libs $(TOOLS_DIR)
-	cd core-shim && $(GO) build -o $(TOOLS_DIR)/gobind golang.org/x/mobile/cmd/gobind
-	cd core-shim && PATH="$(TOOLS_DIR):$$PATH" ANDROID_HOME="$(ANDROID_HOME)" ANDROID_NDK_HOME="$(ANDROID_NDK_HOME)" \
+	cd $(CORE_DIR) && $(GO) build -o $(TOOLS_DIR)/gobind golang.org/x/mobile/cmd/gobind
+	cd $(CORE_DIR) && PATH="$(TOOLS_DIR):$$PATH" ANDROID_HOME="$(ANDROID_HOME)" ANDROID_NDK_HOME="$(ANDROID_NDK_HOME)" \
 		$(GO) tool gomobile bind -target=android/arm64,android/amd64 -androidapi $(ANDROID_API) \
-		-javapkg dev.jotalac.core -ldflags="-s -w" -o ../$(AAR) ./gcal
-	rm -f app/libs/gcal-sources.jar
+		-javapkg dev.jotalac.core -ldflags="-s -w" -o $(abspath $(AAR)) ./pkg/mobile
+	rm -f app/libs/core-sources.jar
 
 core-test:
-	cd core-shim && $(GO) vet ./... && $(GO) test ./...
+	cd $(CORE_DIR) && $(GO) vet ./pkg/mobile && $(GO) test ./pkg/mobile
 
 clean-core:
 	rm -f $(AAR)

@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dev.jotalac.AppContainer
 import dev.jotalac.R
 import dev.jotalac.core.Calendar
@@ -15,17 +14,18 @@ import dev.jotalac.core.Event
 import dev.jotalac.core.Reminder
 import dev.jotalac.core.UpdateStrategy
 import dev.jotalac.data.Frequency
+import dev.jotalac.data.PendingEdits
 import dev.jotalac.data.Recurrence
 import dev.jotalac.data.RepeatEnd
 import dev.jotalac.layout.isWholeDay
 import dev.jotalac.ui.calendar.newEventDraft
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.UUID
 
 /** Repeat choices of the editor's repeat menu. */
 enum class RepeatMode(@StringRes val label: Int, val frequency: Frequency?) {
@@ -211,9 +211,13 @@ class EventEditorViewModel(private val container: AppContainer) : ViewModel() {
         val event = buildEvent() ?: return
         val stored = original
         when {
-            stored == null -> run { container.core.createEvent(event) }
+            stored == null -> {
+                // an app-chosen ID (UUIDv4, which the core accepts) lets the new event show before it is saved
+                val created = event.copy(id = UUID.randomUUID().toString())
+                run(PendingEdits.change(created).takeIf { !created.isRepeating }) { container.core.createEvent(created) }
+            }
             stored.isRepeating -> strategyPrompt = StrategyAction.Update
-            else -> run { container.core.updateEvent(event) }
+            else -> run(PendingEdits.change(event).takeIf { !event.isRepeating }) { container.core.updateEvent(event) }
         }
     }
 
@@ -221,7 +225,7 @@ class EventEditorViewModel(private val container: AppContainer) : ViewModel() {
         val stored = original ?: return
         if (readonly || saving) return
         if (stored.isRepeating) strategyPrompt = StrategyAction.Delete
-        else run { container.core.removeEvent(stored) }
+        else run(PendingEdits.removal(stored)) { container.core.removeEvent(stored) }
     }
 
     fun applyStrategy(strategy: UpdateStrategy) {
@@ -231,25 +235,26 @@ class EventEditorViewModel(private val container: AppContainer) : ViewModel() {
         when (action) {
             StrategyAction.Update -> {
                 val event = buildEvent() ?: return
-                run { container.core.updateRepeatingEvent(stored, event, strategy) }
+                run(null) { container.core.updateRepeatingEvent(stored, event, strategy) }
             }
-            StrategyAction.Delete -> run { container.core.removeRepeatingEvent(stored, strategy) }
+            StrategyAction.Delete -> run(null) { container.core.removeRepeatingEvent(stored, strategy) }
         }
     }
 
-    private fun run(block: suspend () -> Any?) {
+    /**
+     * Closes the editor at once and saves in the background, showing [preview] meanwhile (repeating
+     * series appear once saved). A failed save reverts the views and is reported on the calendar screen.
+     */
+    private fun run(preview: PendingEdits.Edit?, block: suspend () -> Any?) {
+        if (saving) return
         saving = true
-        viewModelScope.launch {
-            try {
-                block()
-                container.afterMutation()
-                container.editorRequest.value = null
-                _done.value = true
-            } catch (e: Exception) {
-                failure = e
-            } finally {
-                saving = false
-            }
-        }
+        container.edits.save(
+            preview,
+            save = { block() },
+            onSaved = { container.afterMutation() },
+            onFailed = { container.repository.notifyEventsChanged() },
+        )
+        container.editorRequest.value = null
+        _done.value = true
     }
 }

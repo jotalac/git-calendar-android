@@ -45,7 +45,7 @@ android {
     }
 }
 
-// The Go core is bound with gomobile from ../core-shim into app/libs/gcal.aar (see the root Makefile).
+// The Go core is bound with gomobile from ../git-calendar-core (pkg/mobile) into app/libs/core.aar (see the root Makefile).
 // `go` is looked up from `go.path` in local.properties, then the usual install locations.
 val localProps = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -57,11 +57,12 @@ val goBinary: String = localProps.getProperty("go.path")
 val sdkDir: String? = localProps.getProperty("sdk.dir")
 
 val buildCoreAar by tasks.registering(Exec::class) {
-    description = "Builds app/libs/gcal.aar from core-shim with gomobile"
+    description = "Builds app/libs/core.aar from git-calendar-core with gomobile"
     workingDir = rootProject.projectDir
-    inputs.dir(rootProject.file("core-shim"))
-    inputs.dir(rootProject.file("core/pkg")) // core-shim/go.mod replaces the core with ../core
-    outputs.file(file("libs/gcal.aar"))
+    // the core is a checkout next to this repository
+    inputs.dir(rootProject.file("../git-calendar-core/pkg"))
+    inputs.file(rootProject.file("../git-calendar-core/go.mod"))
+    outputs.file(file("libs/core.aar"))
     commandLine(
         buildList {
             add("make"); add("core"); add("GO=$goBinary")
@@ -72,7 +73,7 @@ val buildCoreAar by tasks.registering(Exec::class) {
 tasks.named("preBuild") { dependsOn(buildCoreAar) }
 
 dependencies {
-    implementation(files("libs/gcal.aar"))
+    implementation(files("libs/core.aar"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

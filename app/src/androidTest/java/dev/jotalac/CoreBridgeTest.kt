@@ -26,7 +26,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-/** Exercises the real Go core (gcal.aar) through CoreBridge on a device. */
+/** Exercises the real Go core (core.aar) through CoreBridge on a device. */
 @RunWith(AndroidJUnit4::class)
 class CoreBridgeTest {
     private lateinit var dir: File

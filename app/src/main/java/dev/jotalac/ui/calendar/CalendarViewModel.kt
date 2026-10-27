@@ -10,6 +10,7 @@ import dev.jotalac.core.Event
 import dev.jotalac.core.Tag
 import dev.jotalac.data.CalendarRepository
 import dev.jotalac.data.CalendarViewType
+import dev.jotalac.data.PendingEdits
 import dev.jotalac.data.Settings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,6 +81,9 @@ class CalendarViewModel(
     val message: StateFlow<String?> = _message.asStateFlow()
 
     private val _error = MutableStateFlow<Throwable?>(null)
+
+    /** Edits shown before the core has saved them, see [PendingEdits]. */
+    val pendingEdits: StateFlow<Map<String, PendingEdits.Edit>> = container.edits.edits
     val error: StateFlow<Throwable?> = _error.asStateFlow()
 
     val startupError = MutableStateFlow<Throwable?>(null)
@@ -94,6 +98,8 @@ class CalendarViewModel(
                 }
             }
         }
+        // saves that finished after the editor or drag was done with them
+        viewModelScope.launch { container.edits.failures.collect { _error.value = it } }
         viewModelScope.launch {
             container.openDate.collect { date ->
                 if (date != null) {
@@ -144,7 +150,9 @@ class CalendarViewModel(
     // ------------------------------------------ data -------------------------------------------
 
     suspend fun loadEvents(from: ZonedDateTime, to: ZonedDateTime): List<Event> = try {
+        val started = container.edits.loadStarted()
         container.core.getEvents(from, to, CalendarRepository.buildFilter(hiddenTags.value))
+            .also { container.edits.loaded(started, from, to) }
     } catch (e: CancellationException) {
         throw e // the view moved to other dates while loading; not an error
     } catch (e: Exception) {
@@ -185,15 +193,13 @@ class CalendarViewModel(
             openEditor()
             return
         }
-        viewModelScope.launch {
-            try {
-                container.core.updateEvent(updated)
-                container.afterMutation()
-            } catch (e: Exception) {
-                _error.value = e
-                container.repository.notifyEventsChanged()
-            }
-        }
+        // shown right away; the core may still be busy with a sync
+        container.edits.save(
+            PendingEdits.change(updated),
+            save = { container.core.updateEvent(updated) },
+            onSaved = { container.afterMutation() },
+            onFailed = { container.repository.notifyEventsChanged() },
+        )
     }
 
     fun saveTag(target: TagEditTarget, name: String, color: String) {
@@ -233,3 +239,4 @@ class CalendarViewModel(
         const val KEY_DATE = "date"
     }
 }
+

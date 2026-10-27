@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 /** Stable error categories reported by the core (see core/pkg/errcode). */
 enum class CoreErrorCode { NETWORK, AUTH, FORBIDDEN, RATELIMIT, VALIDATION, STORAGE }
 
-/** An error returned by the Go core, decoded from the JSON message produced by core-shim. */
+/** An error returned by the Go core, decoded from the JSON message produced by the core's mobile binding. */
 class CoreException(
     message: String,
     val code: CoreErrorCode? = null,

@@ -1,7 +1,7 @@
 package dev.jotalac.core
 
-import dev.jotalac.core.gcal.Core
-import dev.jotalac.core.gcal.Gcal
+import dev.jotalac.core.mobile.Core
+import dev.jotalac.core.mobile.Mobile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withContext
@@ -22,7 +22,7 @@ class CoreBridge(private val dataDir: File) {
 
     private var instance: Core? = null
 
-    private fun core(): Core = instance ?: Gcal.newCore(dataDir.absolutePath).also {
+    private fun core(): Core = instance ?: Mobile.newCore(dataDir.absolutePath).also {
         // date-only iCalendar events (holidays) must run from local midnight to local midnight
         runCatching { it.setTimeZone(ZoneId.systemDefault().id) }
         instance = it

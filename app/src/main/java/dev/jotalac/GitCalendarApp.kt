@@ -11,6 +11,7 @@ import dev.jotalac.core.CoreBridge
 import dev.jotalac.core.CoreException
 import dev.jotalac.core.Event
 import dev.jotalac.data.CalendarRepository
+import dev.jotalac.data.PendingEdits
 import dev.jotalac.data.Connectivity
 import dev.jotalac.data.SettingsRepository
 import dev.jotalac.data.SyncManager
@@ -65,6 +66,7 @@ class AppContainer(context: Context) {
     val repository = CalendarRepository(core)
     val sync = SyncManager(core, repository, connectivity, scope)
     val reminders = ReminderScheduler(context, core, settings)
+    val edits = PendingEdits(scope)
 
     /** Event handed to the editor screen; navigation arguments stay small. */
     val editorRequest = MutableStateFlow<EditorRequest?>(null)

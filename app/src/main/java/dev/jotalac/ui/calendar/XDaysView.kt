@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -49,6 +50,7 @@ import dev.jotalac.R
 import dev.jotalac.core.Event
 import dev.jotalac.data.HiddenTags
 import dev.jotalac.data.Settings
+import dev.jotalac.data.withPendingEdits
 import dev.jotalac.layout.DayLayout
 import dev.jotalac.layout.DragMath
 import dev.jotalac.layout.HourRange
@@ -112,9 +114,14 @@ fun XDaysView(
 ) {
     val zone = ZoneId.systemDefault()
     val configured = HourRange(settings.dayViewStartHour, settings.timelineEndHour)
-    val events by produceState(emptyList<Event>(), start, days, revision, hidden, configured) {
-        val extra = if (configured.endHour > 24) 1L else 0L
-        value = vm.loadEvents(start.atStartOfDay(zone), start.plusDays(days + extra).atStartOfDay(zone))
+    val rangeStart = start.atStartOfDay(zone)
+    val rangeEnd = start.plusDays(days + if (configured.endHour > 24) 1L else 0L).atStartOfDay(zone)
+    val loaded by produceState(emptyList<Event>(), start, days, revision, hidden, configured) {
+        value = vm.loadEvents(rangeStart, rangeEnd)
+    }
+    val pendingEdits by vm.pendingEdits.collectAsStateWithLifecycle()
+    val events = remember(loaded, pendingEdits, rangeStart, rangeEnd, hidden) {
+        loaded.withPendingEdits(pendingEdits, rangeStart, rangeEnd, hidden)
     }
     val split = remember(events, start, days, configured) { TimelineSplit.split(events, start, days, configured) }
     val dates = remember(start, days) { List(days) { start.plusDays(it.toLong()) } }

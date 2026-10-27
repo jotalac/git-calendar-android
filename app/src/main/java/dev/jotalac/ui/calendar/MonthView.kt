@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -38,6 +39,7 @@ import dev.jotalac.R
 import dev.jotalac.core.Event
 import dev.jotalac.data.HiddenTags
 import dev.jotalac.data.Settings
+import dev.jotalac.data.withPendingEdits
 import dev.jotalac.layout.MonthLayout
 import dev.jotalac.ui.common.currentLocale
 import dev.jotalac.ui.common.rememberTimeFormatter
@@ -71,8 +73,14 @@ fun MonthView(
     val locale = currentLocale()
     val gridStart = remember(month, settings.weekStart) { MonthLayout.gridStart(month, settings.weekStart) }
     val dates = remember(gridStart) { List(MonthLayout.WEEKS * 7) { gridStart.plusDays(it.toLong()) } }
-    val events by produceState(emptyList<Event>(), gridStart, revision, hidden) {
-        value = vm.loadEvents(gridStart.atStartOfDay(zone), gridStart.plusDays(42).atStartOfDay(zone))
+    val rangeStart = gridStart.atStartOfDay(zone)
+    val rangeEnd = gridStart.plusDays(42).atStartOfDay(zone)
+    val loaded by produceState(emptyList<Event>(), gridStart, revision, hidden) {
+        value = vm.loadEvents(rangeStart, rangeEnd)
+    }
+    val pendingEdits by vm.pendingEdits.collectAsStateWithLifecycle()
+    val events = remember(loaded, pendingEdits, rangeStart, rangeEnd, hidden) {
+        loaded.withPendingEdits(pendingEdits, rangeStart, rangeEnd, hidden)
     }
     val density = LocalDensity.current
     val haptics = LocalHapticFeedback.current
